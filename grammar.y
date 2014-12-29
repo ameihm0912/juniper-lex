@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include "juniper-lex.h"
 
 extern void	yyerror(const char *);
 extern int	yylex(void);
@@ -12,7 +13,7 @@ extern int	yylex(void);
 %token STRING OBRACE EBRACE SEMICOLON
 %token INTERFACES GIGETHER_OPTIONS FABRIC_OPTIONS
 %token UNIT DESCRIPTION REDUNDANT_ETHER_OPTIONS
-%token FAMILY
+%token FAMILY ADDRESS
 
 %type <str> STRING
 
@@ -38,7 +39,11 @@ interfaces_inner:
 
 interface_statement:
 	STRING words SEMICOLON
-	| STRING OBRACE interface_entries EBRACE
+	| STRING 
+	{
+		add_interface($1);
+	}
+	OBRACE interface_entries EBRACE
 	;
 
 interface_entries:
@@ -69,7 +74,10 @@ family_statements:
 	| family_statements family_statement
 
 family_statement:
-	statement
+	ADDRESS STRING SEMICOLON
+	| ADDRESS STRING OBRACE statements EBRACE
+	| STRING OBRACE statements EBRACE
+	| STRING STRING SEMICOLON
 
 stanza_spec:
 	INTERFACES OBRACE interfaces_inner EBRACE

@@ -25,6 +25,8 @@ parser_mode_return(char *t)
 	else if (parser_mode == MODE_INTERFACES) {
 		if (strcmp(t, "family") == 0)
 			return (FAMILY);
+		else if (strcmp(t, "address") == 0)
+			return (ADDRESS);
 
 		if (yycontext != INTERFACES_MATCH_CONTEXT)
 			return (STRING);
@@ -70,6 +72,7 @@ unit			return parser_mode_return(yytext);
 description		return parser_mode_return(yytext);
 redundant-ether-options	return parser_mode_return(yytext);
 family			return parser_mode_return(yytext);
+address			return parser_mode_return(yytext);
 interfaces		{
 				if (yycontext == 0) {
 					parser_set_mode(MODE_INTERFACES);
