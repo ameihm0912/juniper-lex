@@ -18,6 +18,11 @@ int		lineno = 1;
 struct interface	*iflist = NULL;
 int			ninterfaces = 0;
 
+void
+add_address(char *addr, struct interface *intptr)
+{
+}
+
 struct interface *
 get_interface(char *name)
 {
@@ -118,7 +123,8 @@ main(int argc, char *argv[])
 	confpath = argv[0];
 
 	parse_config(confpath);
-	printf("%d\n", ninterfaces);
+
+	printf("# interfaces processed: %d\n", ninterfaces);
 
 	return (0);
 }

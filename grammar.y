@@ -1,9 +1,15 @@
 %{
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 #include "juniper-lex.h"
 
 extern void	yyerror(const char *);
 extern int	yylex(void);
+
+struct interface	*current_interface = NULL;
+int			current_family = 0;
 %}
 
 %union {
@@ -41,7 +47,7 @@ interface_statement:
 	STRING words SEMICOLON
 	| STRING 
 	{
-		add_interface($1);
+		current_interface = add_interface($1);
 	}
 	OBRACE interface_entries EBRACE
 	;
@@ -67,7 +73,18 @@ unit_statements:
 unit_statement:
 	STRING words SEMICOLON
 	| STRING SEMICOLON
-	| FAMILY STRING OBRACE family_statements EBRACE
+	| FAMILY STRING
+	{
+		if (strcmp("inet", $2) == 0)
+			current_family = ATYPE_INET4;
+		else if (strcmp("inet6", $2) == 0)
+			current_family = ATYPE_INET6;
+		else {
+			fprintf(stderr, "bad family %s\n", $2);
+			exit(1);
+		}
+	}
+	OBRACE family_statements EBRACE
 
 family_statements:
 	family_statement
@@ -75,6 +92,9 @@ family_statements:
 
 family_statement:
 	ADDRESS STRING SEMICOLON
+	{
+		add_address($2, current_interface);
+	}
 	| ADDRESS STRING OBRACE statements EBRACE
 	| STRING OBRACE statements EBRACE
 	| STRING STRING SEMICOLON
