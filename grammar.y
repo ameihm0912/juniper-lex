@@ -42,6 +42,7 @@ statement:
 interfaces_inner:
 	interface_statement
 	| interfaces_inner interface_statement
+	;
 
 interface_statement:
 	STRING words SEMICOLON
@@ -65,10 +66,12 @@ interface_entry:
 	| FABRIC_OPTIONS OBRACE statements EBRACE
 	| UNIT STRING OBRACE unit_statements EBRACE
 	| REDUNDANT_ETHER_OPTIONS OBRACE statements EBRACE
+	;
 
 unit_statements:
 	unit_statement
 	| unit_statements unit_statement
+	;
 
 unit_statement:
 	STRING words SEMICOLON
@@ -85,10 +88,12 @@ unit_statement:
 		}
 	}
 	OBRACE family_statements EBRACE
+	;
 
 family_statements:
 	family_statement
 	| family_statements family_statement
+	;
 
 family_statement:
 	ADDRESS STRING SEMICOLON
@@ -98,14 +103,17 @@ family_statement:
 	| ADDRESS STRING OBRACE statements EBRACE
 	| STRING OBRACE statements EBRACE
 	| STRING STRING SEMICOLON
+	;
 
 stanza_spec:
 	INTERFACES OBRACE interfaces_inner EBRACE
 	| STRING OBRACE stanza_inner EBRACE
 	| STRING words OBRACE stanza_inner EBRACE
+	;
 
 stanza_inner:
 	statements
+	;
 
 command_spec:
 	STRING SEMICOLON
@@ -115,3 +123,4 @@ command_spec:
 words:
 	STRING
 	| words STRING
+	;
