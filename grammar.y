@@ -93,7 +93,7 @@ family_statements:
 family_statement:
 	ADDRESS STRING SEMICOLON
 	{
-		add_address($2, current_interface);
+		add_address($2, current_family, current_interface);
 	}
 	| ADDRESS STRING OBRACE statements EBRACE
 	| STRING OBRACE statements EBRACE

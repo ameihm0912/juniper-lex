@@ -1,4 +1,4 @@
-#define MAX_ADDR	32
+#define MAX_ADDR	512
 
 enum {
 	ATYPE_INET4,
@@ -18,4 +18,4 @@ struct interface {
 };
 
 struct interface	*add_interface(char *);
-void			add_address(char *, struct interface *);
+void			add_address(char *, int, struct interface *);
