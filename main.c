@@ -139,7 +139,7 @@ dump_addresses()
 	struct address *aptr;
 	int i;
 
-	for (iptr = iflist; iptr->next != NULL; iptr = iptr->next) {
+	for (iptr = iflist; ; iptr = iptr->next) {
 		printf("# interface %s\n", iptr->name);
 
 		for (i = 0; i < MAX_ADDR; i++) {
@@ -151,6 +151,9 @@ dump_addresses()
 			else
 				printf("# regex_no_match %s\n", aptr->str);
 		}
+
+		if (iptr->next == NULL)
+			break;
 	}
 }
 

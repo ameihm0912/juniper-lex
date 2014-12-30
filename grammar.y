@@ -10,6 +10,7 @@ extern int	yylex(void);
 
 struct interface	*current_interface = NULL;
 int			current_family = 0;
+int			inactive_flag = 0;
 %}
 
 %union {
@@ -18,7 +19,8 @@ int			current_family = 0;
 
 %token STRING OBRACE EBRACE SEMICOLON
 %token INTERFACES GIGETHER_OPTIONS FABRIC_OPTIONS
-%token UNIT DESCRIPTION REDUNDANT_ETHER_OPTIONS
+%token UNIT DESCRIPTION REDUNDANT_ETHER_OPTIONS INACTIVE
+%token INTERFACE_RANGE
 %token FAMILY ADDRESS
 
 %type <str> STRING
@@ -45,7 +47,15 @@ interfaces_inner:
 	;
 
 interface_statement:
-	STRING words SEMICOLON
+	INTERFACE_RANGE
+	{
+		set_ignore_tokens(1);
+	}
+	words OBRACE statements EBRACE
+	{
+		set_ignore_tokens(0);
+	}
+	| STRING words SEMICOLON
 	| STRING 
 	{
 		current_interface = add_interface($1);
@@ -61,11 +71,21 @@ interface_entries:
 interface_entry:
 	STRING SEMICOLON
 	| STRING words SEMICOLON
+	| INACTIVE words SEMICOLON
 	| DESCRIPTION words SEMICOLON
 	| GIGETHER_OPTIONS OBRACE statements EBRACE
 	| FABRIC_OPTIONS OBRACE statements EBRACE
-	| UNIT STRING OBRACE unit_statements EBRACE
+	| UNIT
+	{
+		inactive_flag = 0;
+	}
+	STRING OBRACE unit_statements EBRACE
 	| REDUNDANT_ETHER_OPTIONS OBRACE statements EBRACE
+	| INACTIVE
+	{
+		inactive_flag = 1;
+	}
+	UNIT STRING OBRACE unit_statements EBRACE
 	;
 
 unit_statements:
@@ -82,12 +102,18 @@ unit_statement:
 			current_family = ATYPE_INET4;
 		else if (strcmp("inet6", $2) == 0)
 			current_family = ATYPE_INET6;
+		else if (strcmp("ethernet-switching", $2) == 0)
+			set_ignore_tokens(1);
 		else {
 			fprintf(stderr, "bad family %s\n", $2);
 			exit(1);
 		}
 	}
 	OBRACE family_statements EBRACE
+	{
+		set_ignore_tokens(0);
+	}
+	| FAMILY STRING SEMICOLON
 	;
 
 family_statements:
@@ -98,11 +124,17 @@ family_statements:
 family_statement:
 	ADDRESS STRING SEMICOLON
 	{
-		add_address($2, current_family, current_interface);
+		if (!inactive_flag)
+			add_address($2, current_family, current_interface);
 	}
 	| ADDRESS STRING OBRACE statements EBRACE
+	{
+		if (!inactive_flag)
+			add_address($2, current_family, current_interface);
+	}
 	| STRING OBRACE statements EBRACE
 	| STRING STRING SEMICOLON
+	| STRING SEMICOLON
 	;
 
 stanza_spec:

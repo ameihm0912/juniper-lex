@@ -19,3 +19,4 @@ struct interface {
 
 struct interface	*add_interface(char *);
 void			add_address(char *, int, struct interface *);
+void			set_ignore_tokens(int);

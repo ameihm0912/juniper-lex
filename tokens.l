@@ -7,6 +7,7 @@
 extern int	lineno;
 
 int		yycontext = 0;
+int		ignore_tokens = 0;
 int		parser_mode = 0;
 
 #define INTERFACES_MATCH_CONTEXT 2
@@ -16,10 +17,20 @@ enum {
 	MODE_INTERFACES
 };
 
+void
+set_ignore_tokens(int f)
+{
+	ignore_tokens = f;
+}
+
 int
 parser_mode_return(char *t)
 {
 	yylval.str = strdup(t);
+
+	if (ignore_tokens)
+		return (STRING);
+
 	if (parser_mode == MODE_NONE)
 		return (STRING);
 	else if (parser_mode == MODE_INTERFACES) {
@@ -41,6 +52,8 @@ parser_mode_return(char *t)
 			return (DESCRIPTION);
 		else if (strcmp(t, "redundant-ether-options") == 0)
 			return (REDUNDANT_ETHER_OPTIONS);
+		else if (strcmp(t, "inactive:") == 0)
+			return (INACTIVE);
 	}
 	return (STRING);
 }
@@ -57,13 +70,15 @@ parser_set_mode(int m)
 
 tokenchar	[^[:blank:];\n]
 tokenstring	{tokenchar}+
+poundcomment	\#.*\n
+ccomment	\/\*.*\n
 
 %s inner
 
 %%
 
-\#.*			/* ignore comments */
-\/\*.*			/* ignore comments */
+{poundcomment}		/* ignore comments */
+{ccomment}		/* ignore comments */
 [ \t]+			/* whitespace ignored */
 \n			lineno++;
 gigether-options	return parser_mode_return(yytext);
@@ -73,6 +88,8 @@ description		return parser_mode_return(yytext);
 redundant-ether-options	return parser_mode_return(yytext);
 family			return parser_mode_return(yytext);
 address			return parser_mode_return(yytext);
+inactive:		return parser_mode_return(yytext);
+interface-range		return (INTERFACE_RANGE);
 interfaces		{
 				if (yycontext == 0) {
 					parser_set_mode(MODE_INTERFACES);
