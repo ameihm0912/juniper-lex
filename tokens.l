@@ -73,8 +73,6 @@ tokenstring	{tokenchar}+
 poundcomment	\#.*\n
 ccomment	\/\*.*\n
 
-%s inner
-
 %%
 
 {poundcomment}		/* ignore comments */
